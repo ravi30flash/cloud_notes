@@ -1,0 +1,139 @@
+Date : 1 May,2023
+--------------------------------------
+hadoop : EMR
+vm : EC2 instance
+database : RDS 
+nfs server shares the data on the network, in this given example we are storing data from node 1 and node 2 on storage machine
+
+how live migration works in aws
+3 machines
+1. node 1
+2. node 2
+3. storage server
+
+# node 1
+/----Ip address given to this node------/
+-> 192.168.10.1
+
+/----commands which are need to run on node1-----/
+-> sudo su
+-> apt update
+-> apt upgrade
+-> apt install libvirt
+-> apt install virt-manager
+-> apt install qemu-kvm(window server 2016 is installed by default)
+# open virt-manager and connect to centralised server
+    then start the virtual machine -> window server 2k16
+-> enable ssh on node1
+    -> sudo vim /etc/hosts
+    -> sudo vi /etc/ssh/sshd_config
+        PermitRootLogin yes
+        PermitRootLogin without-password
+    -> sudo systemctl restart ssh 
+# generate keygenerator for the local user
+-> ssh-keygen -t rsa
+# generate keygenerator for the root user
+-> sudo ssh-keygen -t rsa
+# enable ssh root login for ubuntu
+-> sudo passwd -l root
+# generate password for root
+-> sudo passwd
+    -> enter UNIX password
+    -> re-enter UNIX password
+# we need to copy public key of node1 to node2
+-> sudo ssh-copy-id -i /root/.ssh/id_rsa.pub root@node2
+    -> yes to confirm
+    -> enter node2 password: 
+    -> node1 public key is copied successfully to node2
+
+# add connection in qemu-kvm 
+-> click on add connection
+    -> give connection type
+
+
+# node 2
+/----Ip address given to this node------/
+-> 192.168.10.2
+
+/----commands which are need to run on node2-----/
+-> connect hypervisor node 2 to nfs share
+-> enable password less ssh, from node 1 to node 2 and reverse, enable root login through ssh
+-> then migrate
+-> enable ssh on node1
+    -> sudo vim /etc/hosts
+    -> sudo vi /etc/ssh/sshd_config
+        PermitRootLogin yes
+        PermitRootLogin without-password
+    -> sudo systemctl restart ssh
+# generate keygenerator for the local user
+-> ssh-keygen -t rsa
+# generate keygenerator for the root user
+-> sudo ssh-keygen -t rsa
+# enable ssh root login for ubuntu
+-> sudo passwd -l root
+# generate password for root
+-> sudo passwd
+    -> enter UNIX password
+    -> re-enter UNIX password
+# we need to copy public key of node2 to node1
+-> sudo ssh-copy-id -i /root/.ssh/id_rsa.pub root@node1
+    -> yes to confirm
+    -> enter node1 password: 
+    -> node2 public key is copied successfully to node1
+
+/-----attach node2 vm to centralised storage server------/
+    -> storage -> add pool -> name : "default" -> type : netfs : Netword Exported directory
+    -> add ip address : 192.168.10.5 and directory name : 
+    # to check if storage server is attached to nhi
+    -> showmount -e 192.168.10.5
+
+# storage
+/----Ip address given to this node------/
+-> 192.168.10.5
+
+/----commands which are need to run on storage-server-----/
+-> sudo su
+-> apt install nfs-server
+    # after installing the server we need to create this file and add the directory which need to be shared
+        -> vim /etc/exports
+            /vm-store *(rw no_root_squash) 
+            * : means that it will accept request form all ip address
+            rw : means it is read and write operations are performed
+            no_root_squash : by default it does not treat root as root user
+        -> systemctl restart nfs
+        -> systemctl restart nfs-server
+        -> showmount  -e 192.168.10.5
+    # check content of the shared directory we use
+        -> ls /vm-store/
+
+
+
+# Containers : lighweight execution units 
+physical server -> VirtualMachines -> Containers
+
+issue with VMs: it requires an Operating system, when a VM starts,first the os start and then the application starts,
+so it takes some time to respond to client therefore, there is a delay in VMs
+VMs are not detachable
+
+
+this can be overcome by using containers: 
+containers do not require the complete os, when a container starts, no os Booting required. this container execution is fast as compared to VMs.
+
+to run containers:
+1. we need container runtime
+2. containers runtime is a software which allows you to create,start, stop,i.e. manage containers
+
+ex. docker,rkt,podman,containered
+-> container provides isolation
+
+how container is created:
+-> need an image
+-> contains os based libraries
+-> functions + platofrm(middleware) + application
+
+how to create a container
+# to create a container we use, docker environment
+to download docker, we go to the docker repository 
+-> hub.docker.com
+
+
