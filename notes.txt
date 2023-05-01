@@ -105,6 +105,13 @@ how live migration works in aws
         -> showmount  -e 192.168.10.5
     # check content of the shared directory we use
         -> ls /vm-store/
+    
+how to change static ip address for given machine and allocate to dhcp ip
+# edit the given file
+    -> sudo vim etc/netplan/01-netcfg.yaml
+        change dhcp4 : no to yes
+        comment the ip address the hardcoded address
+
 
 
 
@@ -135,5 +142,31 @@ how to create a container
 # to create a container we use, docker environment
 to download docker, we go to the docker repository 
 -> hub.docker.com
+
+how to install docker
+-> sudo apt install docker.io -y
+
+how to check docker installed or not
+-> docker
+
+how to start docker service
+-> sudo systemctl start docker
+
+how to enable docker on autostart, so that next time when system start,docker service get's started automatically
+-> sudo systemctl enable docker
+
+how to check running container on the given machine
+-> sudo docker ps
+-> sudo docker ps -a
+
+container LifeCycle
+-> create -> start -> execute(running mode) -> stop/pause
+
+how to check local docker images on the system
+-> sudo docker images
+
+how to pull remote image on the local system
+-> docker pull {image_name}
+ex. docker pull centos
 
 
