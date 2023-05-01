@@ -121,7 +121,7 @@ physical server -> VirtualMachines -> Containers
 issue with VMs: it requires an Operating system, when a VM starts,first the os start and then the application starts,
 so it takes some time to respond to client therefore, there is a delay in VMs
 VMs are not detachable
-
+container images are only Read-only
 
 this can be overcome by using containers: 
 containers do not require the complete os, when a container starts, no os Booting required. this container execution is fast as compared to VMs.
@@ -157,6 +157,7 @@ how to enable docker on autostart, so that next time when system start,docker se
 
 how to check running container on the given machine
 -> sudo docker ps
+how to check all the containers in running or stopped state
 -> sudo docker ps -a
 
 container LifeCycle
@@ -168,5 +169,52 @@ how to check local docker images on the system
 how to pull remote image on the local system
 -> docker pull {image_name}
 ex. docker pull centos
+
+how to run a docker image
+-> docker run {image_name}
+ex. docker run centos
+
+how to delete a container
+-> docker rm {container_name/container_id}
+ex. docker rm centos
+
+how to run a container terminal in interactive mode
+-> docker run -it {container_name/container_id}
+
+how to give custom name to a container
+-> docker run -ti --name {new_name} {container_name/container_id}
+ex. docker run -ti --name c1 centos
+
+how to stop a container which is in running state
+-> docker stop {container_name/container_id}
+
+difference between docker run or start
+docker start : only used to start a stopped container
+docker run : used to create new instance of the base image
+
+how to bring docker running in backgroup to foreground
+-> docker attach {container_id/container_name}
+
+note: when no tag is mentioned while pulling an image, it automatically picks up the image latest image
+-> docker pull {image_name}:tag
+
+when docker is installed on the system, then it creates a virtual adapter by the name of docker0, and we can check that by using command
+-> ip a
+
+how to get detailed view of a docker image
+-> docker inspect {container_name/container_id}
+
+when container is stopped, then it's all resources get's released,except storage
+default ip for docker is 172.17.0.1
+
+how to run apache2 server using container
+-> docker run --name web1 httpd
+
+how to run apache2 server using custom port
+-> docker run --name web1 -p 8000:80 httpd
+    machine-ip:8000
+    container-ip:80
+
+
 
 
