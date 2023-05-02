@@ -296,4 +296,112 @@ instance commands
     -e : set the password for default root account 
 
 
+# how to create docker image from ubuntu image file
+# there is direct root access inside, the container
+# docker file name should be Dockerfile
+# dont delete the file as it will create each and every layer 
+# two images can't have the same name
+# use "double" quotes whenever we pass arguments inside CMD command in Dockerfile, also the space to separate the arguments
+
+
+to delete a docker image we use
+-> sudo docker rmi [image_name/image_id]
+
+to delete a container we use
+-> sudo docker rm [container_id/container_name]
+
+-> code
+    FROM ubuntu
+    RUN apt update -y
+    RUN apt install python2.7 -y
+    RUN mkdir /App1
+    COPY hello.py /App1/
+    CMD [ "python2.7" , "/App1/hello.py" ]
+
+# tell docker to build image
+# -t : it gives name:tag
+-> docker build -t [image_name] [path]
+ex docker build -t myapp:v1 ./
+
+docker creates the image in layer format
+
+------------------------
+|   run file           |   :   layer 6
+------------------------
+|   copy file          |   :   layer 5
+------------------------
+|   mkdir /App1        |   :   layer 4
+------------------------
+|   install python 2.7 |   :   layer 3
+------------------------
+|   update os          |   :   layer 2
+------------------------
+|   os image           |   :   layer 1
+------------------------
+
+# creating another image in docker for python
+
+-> code
+    FROM ubuntu
+    RUN apt update -y
+    RUN apt install python2.7 -y
+    RUN mkdir /app2
+    COPY prog1.py /app2/
+    CMD [ "python2.7" , "/App1/prog1.py" ]
+
+-> docker build -t myapp2 .
+
+# creating another image in docker to run bash script
+
+-> code
+    FROM ubuntu
+    RUN apt update -y
+    RUN mkdir /script
+    COPY script.sh ./script
+    CMD [ "./script/script.sh" ]
+
+-> docker build -t script1 .
+
+how to save container as image file
+# it doesn't execute anything, it just saves the state of the container
+# sudo docker run --name ub1 -ti ubuntu
+    -> mkdir /test
+    -> cd /test
+    -> vi s1.sh
+    -> cat > s1.sh
+    -> ls
+    -> chmod +x s1.sh
+    -> ./s1.sh
+
+# to save a container as a image, it has to be in stopped state
+-> sudo docker commit [container_name] [image_name]
+
+# now we can recover that file in by running the backup file, just in case if that container gets deleted
+
+
+# how to save a container into a tar file format and send it to someone else
+
+# method 1: using tar file format
+-> container -> .tar file
+
+# this command will make the tar file in the current directory where this command has been executed
+-> sudo docker save myapp1 > myapp1.tar
+
+# how to recover container from tar file to docker container
+-> sudo docker load < myapp1.tar  
+
+# method 2: upload this container to docker hub, and pull it from remote repository
+-> create account on docker hub 
+-> create repository
+-> give name to repository -> give description -> choose public, or private -> 
+-> sudo docker login 
+    -> username: [username]
+    -> password: [password]
+-> sudo docker tag myapp1 [username/repository_name]
+-> sudo docker push [username/repository_name]
+
+
+
+
+
 
