@@ -215,6 +215,85 @@ how to run apache2 server using custom port
     machine-ip:8000
     container-ip:80
 
+2 may,2023
+-----------------------------------------------
+
+location where websites are hosted in httpd container
+-> /usr/local/apache2/htdocs/
+
+how to host a website inside httpd container
+step 1: first create a container of httpd
+step 2: create html file 
+step 3: run the container with specific parameters
+step 4: paste the custom file in in the container
+
+ex. 
+# create the webpage
+->  sudo vim index.html
+# run the docker container
+->  sudo docker run --name web1 -p 9100:80 -d httpd:tag(default: latest)
+# see if container is running or not
+->  sudo docker ps 
+# check if webpage is running or not
+->  browser -> visit the ip address : localhost:9100
+# copy the file in the container page
+->  sudo docker cp index.html web1:/usr/local/apache2/htdocs/
+
+
+# issue with this approach is that everytime website content is change we need to copy to the container, which is not a practical approach
+# to overcome this we mount our developer directory to the container, this process is known as volume mapping
+
+how to do volume mapping
+# create the directory for the website
+-> sudo mkdir webdata && cd webdata
+-> sudo vi index.html
+-> cd .. 
+-> sudo docker run --name web2 -p 8100:80 -v /webdata/:/usr/local/apache2/htdocs/ -d httpd
+    # description of the command
+    --name : gives name to the docker container
+    -p : assign the ports on local machine: inside container
+    -v : maps the volume present on local machine to the location present inside the container
+
+what if same dir is mapped to another container instance with different port,this will run new container with different port,
+this approach is used to do load balancing
+-> sudo docker run --name web3 -p 8101:80 -v /webdata/:/usr/local/apache2/htdocs/ -d httpd
+
+# running container on web_instance in AWS RedHat
+instance commands
+->  yum install podman
+->  sudo podman images
+->  sudo systemctl status podman  
+->  sudo systemctl start podman
+->  clear
+->  sudo podman ps
+->  sudo mkdir /weddata  
+->  cd /webdata
+->  sudo vi index.html
+    welcome to the podman based website
+->  sudo podman run --name w1 -p 80:80 -v /webdata/:/usr/local/apache2/htdocs/ -d httpd
+->  select the registry image where to pull the httpd image
+    [ ]registry.access.redhat.com/httpd:latest
+    [ ]registry.redhat.io/httpd:latest
+    [*]registry.io/httpd:latest
+->  sudo podman ps
+# if container gets stopped without any reason, to find the reason we need to check the container logs
+# to check container logs
+->  sudo podman logs w1 -> (no logs found)
+->  sudo podman images -> (image was download successfully)
+# to check redhat logs
+->  sudo tail -20 /var/log/messages/
+-> sudo getenforce -> Security Enhanced Linux (it doesn't allow to run containers) -> enforcing mode
+-> sudo setenforce 0 -> Permissive mode
+-> sudo podman rm w1
+# now try running the linux after putting SElinux in Permissive mode
+-> sudo podman run --name w1 -p 80:80 -v /webdata/:/usr/local/apache2/htdocs/ -d httpd -> container running successfully after disabling Security Enhanced Linux
+
+# running docker container for mysql on ubuntu based instance 
+-> apt install docker.io
+-> sudo systemctl start docker
+-> sudo docker run --name db1 -ti -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -d mysql 
+    # description of the command
+    -e : set the password for default root account 
 
 
 
