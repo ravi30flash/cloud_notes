@@ -1,0 +1,121 @@
+# VPC : Virtual Private Cloud
+
+theory: 
+    types of network:
+    |----> Private
+        |----> to get access to internet in private network we use NAT(conversion of private ip to public ip)
+    |----> Public
+
+    networking service in AWS:
+    |----> VPCs:
+        |----> types of subnets in VPCs
+            |----> Private : to access the internet we use NAT Gateway and Internet Gateway
+            |----> Public : to access the internet we use Internet Gateway
+
+
+2 May 2023
+-----------------------
+
+# Load Balancer : divide the traffic
+
+dns get resolved into multiple IP addresses, 
+
+application load balancer is used 
+
+# let's first create 2 instances
+-> launch ubuntu instance
+-> install apache2 
+
+for first instance
+-> apt update -y
+-> apt upgrade -y
+-> apt install apache2 -y
+-> mkdir /var/www/html/web1/
+-> mkdir web1
+-> cd web1
+-> vi index.html -> this is a web_page
+-> systemctl restart apache2
+
+for second instance
+-> apt update -y
+-> apt upgrade -y
+-> apt install apache2 -y
+-> mkdir /var/www/html/web2/
+-> mkdir web2
+-> cd web2
+-> vi index.html -> this is a web_page
+-> systemctl restart apache2
+
+# creating the target groups
+-> creating one target group for one instance
+-> creating second target group for second instance
+
+type of target
+1. instance
+2. ip address
+3. lambda functions
+4. application load balancer
+
+For first instance
+-> create target group
+-> select instance
+-> target groupname = WEB1-TG 
+-> health check path = /web1/index.html
+-> register target
+
+For second instance
+-> create target group
+-> select instance
+-> target groupname = WEB2-TG 
+-> health check path = /web2/index.html
+-> register target
+
+# create Load balancer
+
+-> load balancer also has a independent security group 
+
+# how to install docker
+-> apt install docker*
+
+# how to check docker version
+-> docker --version
+
+# how to verify if docker is running or not
+-> sudo systemctl status docker
+
+# how to pull from docker hub image
+-> docker pull [image_name]
+
+# for creating container for the first time always use docker run not docker start
+
+docker run flags:
+--name
+-p
+-d
+
+# how to execute a command in a container
+-> docker exec -ti u1 /bin/bash(command)
+
+path for nginx image
+-> /usr/share/nginx/html
+path for httpd image
+-> /usr/share/nginx/html
+
+how to get shell of a running container
+-> sudo docker exec -ti web3 /bin/bash
+
+Q1. create 3 containers, with customised webpage running on 8000,8100,8200 using nginx image with docker 
+volume mapping
+done!!
+
+Q2. create 1 container of ubuntu.  print the message inside that container, message should contain, name, prn
+docker run --name ub1 -ti ubuntu:latest
+write a script
+
+Q3. create Q2 using Dockerfile build process using ubuntu image
+Q4. create Q4 using Dockerfile build process using python image
+
+difference between RUN and CMD in docker 
+RUN : it is image building step
+CMD : it is runned when container is created from the image
+
