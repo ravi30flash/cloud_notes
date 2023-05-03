@@ -478,9 +478,104 @@ how to find help regarding docker network commands
 # kubernets
 
 # Master node
-        |_______ Container_node1
-        |_______ Container_node2
-        |_______ Container_node3
+        |_______> Container_node1
+        |_______> Container_node2
+        |_______> Container_node3
 
 container_nodes are known as worker nodes.
-it keeps the repicas of the worker nodes.
+it keeps the replicas of the worker nodes.
+
+
+# kubernetes clusters
+-> it is a collection of container working as woker nodes, which are also replicates from time to time by master node, but here, master node becomes a single
+point failure, in order to prevent this we use multi master system
+
+-> in order to work on cloud, kubernetes has to be used with clouse controller
+
+# Kubernetes Components
+1. kube-apiserver
+2. etcd : it is database,it store all the datam,it's configuration data, it's state and it's metadata
+3. kube-scheduler
+    pod: when group are made on the basis of application, and these are assigned with the ip, this group is known as pod
+4. kube-controller-manager: components that runs on master
+    1. node controller
+    2. replication controller
+    3. Endpoints controller
+    4. Service Account & Token controller
+    5. Cloud Controller Manager
+        1. node controller
+        2. router controller
+        3. service controller
+        4. Volume Controller
+5. kubelet : acts as a worker node or client node, it does not manage containers which are not created by kubernetes 
+6. kube-proxy : by default, ip's of the container are not fixed, to prevent this problem we use kube-proxy, it updates and manages the ip address of the
+container present inside pod
+
+                                                _____________________________________
+                                                |  default ip: 172.17.0.2           |
+                                                |  default adapter: docker0         |
+                                                |  default network : 172.17.0.1     |
+                                                |  worker node 1                    |
+                                                |___________________________________|
+                                                _____________________________________
+                                                |  default ip: 172.17.0.2           |
+                                                |  default adapter: docker0         |
+                                                |  default network : 172.17.0.1     |
+                                                |  worker node 2                    |
+                                                |___________________________________|
+                                                _____________________________________
+                                                |  default ip: 172.17.0.2           |
+                                                |  default adapter: docker0         |
+                                                |  default network : 172.17.0.1     |
+                                                |  worker node 3                    |
+                                                |___________________________________|
+
+# we need to install flannel network plugin, which will be used to define the cidr network for the pod networks
+# pod ip address are machine specific
+# pod1 default ip address: 10.244.1.1
+# pod2 default ip address: 10.244.2.1
+# pod3 default ip address: 10.244.3.1
+
+how to get nodes in the cluster
+-> kubectl get nodes
+
+how to get cluster-info
+-> kubectl cluster-info
+
+how to start a cluster
+-> sudo kubeadm init --apiserver-advertise-address 192.168.18.1 --pod-network-cidr=10.244.0.0/16
+# this command will return a token in the end,we need to store the token, which will be executes on the client machines
+
+creating a directory
+-> mkdir .kube
+
+copy admin config to .kube directory
+-> sudo cp /etc/kubernetes/admin.conf ./kube/config
+
+get ownership of the .kube folder
+-> sudo chown {user}:{group} ./kube/config 
+-> sudo chown uadmin:uadmin ./kube/config 
+
+get running nodes
+-> kubectl get nodes (by default it shows the container running on local machine)
+
+get running pods
+-> kubectl get pods
+-> kubectl get pods --all-namespaces(this will return all the namespaces running on local machine,which are running as virtual environment)
+
+to run token on the client nodes
+# first copy the token to the client nodes
+-> scp kube-join worker1:/home/uadmin
+-> scp kube-join worker2:/home/uadmin
+
+
+# on worker1
+-> sudo ./kube-join
+# on worker2
+-> sudo ./kube-join
+
+to see the running nodes
+-> kubectl get nodes
+# master node role will be, control-plane
+# worker1 node role will be, ready
+# worker2 node role will be, ready
