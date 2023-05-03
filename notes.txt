@@ -401,7 +401,86 @@ how to save container as image file
 -> sudo docker push [username/repository_name]
 
 
+----------------------------------
+3 may 2023
+----------------------------------
+# Container networking
+# what is the default ip and networking mode for a container
+# default IP : 172.17.0.1
+# default mode : Bridged (acts as a NAT mode, only single side connection is allowed, but this mode allow port mapping)
+# default adapter : docker 0 : bridge mode
+
+how to create new docker network?
+-> sudo docker network create [network_name]
+-> ex. sudo docker network create app1
+
+how to find help regarding docker network commands
+-> sudo docker network -h
+
+# in order to run our application we pack it inside a custom image,which will be used to run container based on this image
+
+# python script to connect with database
+    import mysql.connector
+    mydb = mysql.connector.connect(
+       host="hpcsa-db"
+       user="root"
+       passwd="password"
+       auth_plugin="mysql_native_password"
+      )
+    testcursor = mydb.cursor()
+    test.cursor.execute("Create database studentdb")
+    test.cursor.execute("SHOW DATABASES")
+    for x in testcursor:
+    print(x)
+-> save it as test.py
+
+# creating the Dockerfile
+    FROM python 3.9
+    RUN pip install mysql-connector-python
+    CMD [ "python" , "test.py" ]
+
+-> sudo docker build -t py-sql .
+
+# we do not require port mapping, as networking is being done inside containers only
+-> sudo docker run --name hpcsa-db -e MYSQL_ROOT_PASSWORD=password -d mysql
+
+-> sudo docker run --rm py-sql
+
+# we need to stop previous running container
+-> sudo docker stop hpcsa-db
+
+# restarting the containers with custom network
+-> sudo docker run --name hpcsa-db --network hpcsa -e MYSQL_ROOT_PASSWORD=password -d mysql
+
+# now running the py-sql container
+-> sudo docker run --network hpcsa --rm py-sql
+
+# conclusion
+-> create separate directory
+-> copy test.py in that directory 
+-> edit test.py and specify hostname,username,password
+-> create Dockerfile
+-> build image from docker file 
+-> create docker network for mysql and py-sql
+-> start mysql container with custom network 
+-> start application container within the same network 
+
+# issues with single container 
+# not scalable
+# single point failurs
+
+# to resolve this we use container clusters
+# we have 2 options to form clusters, both are opensource
+1. docker swarm : only support the docker runtime
+2. kubernets(k8s) : can be used with other container runtime
 
 
+# kubernets
 
+# Master node
+        |_______ Container_node1
+        |_______ Container_node2
+        |_______ Container_node3
 
+container_nodes are known as worker nodes.
+it keeps the repicas of the worker nodes.
