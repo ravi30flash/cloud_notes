@@ -700,3 +700,17 @@ and create a new token everytime, whenever kubernetes server is need to be resta
 -> kubectl expose deployment web1 --type=LoadBalancer
 
 cluster IP -> node IP -> LoadBalancer IP 
+-> kubectl delete pod web1-id
+# how to get replica set
+-> kubectl get rs
+
+# kubernetes cluster, rollup feature
+ipaddress -> service -> deployment -> replicaset -> pod1
+                                                 |_ pod2
+                                                 |_ pod3
+
+in rollup feature, a replica of deployment is created then, all the connection are shifted to new replica set of the deployment
+replica and main deployment branch is deleted. then deployment service is updated with new image. and container are created form that
+new image
+
+this also allows to roll back the changes, just in case if there is any error with new image file, and container are not bein created
