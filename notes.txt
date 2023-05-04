@@ -633,8 +633,70 @@ types of services
 # whenever cluster is created we need to create new directory in user's home directory, and we need to create new directory
 and create a new token everytime, whenever kubernetes server is need to be restarted
 
+# create the directory
 -> mkdir .kube
+# copy the token file to required directory
 -> sudo cp /etc/kubernetes/admin.conf ./kube/config
+# change the ownership of the token file
 -> sudo chown uadmin:uadmin ./kube/config
+# run this command to get th info on running nodes
+-> kubectl get nodes
+# get info about pods of the master
+-> kubectl get pods --all-namespaces
+-> kubectl apply -f https://url
+-> kubectl get pods --all-namespaces
+# to reset the cluster
+-> sudo kubeadm reset
+# remove the directory
+-> rm -rf .kube
+-> sudo kubeadm init --apiserver-advertise-address 192.168.10.1 --pod-network-cidr 10.244.0.0/16
+# copy the new toke to the file
+-> sudo vim kube-cluster-join
+-> mkdir .kube
+-> sudo cp /etc/kubernetes/admin.conf .kube/config
+-> sudo chown uadmin:uadmin .kube/config
+-> kubectl get pods --all-namespaces
+-> cat kube-cluster-join 
+# to run this file over ssh on the worker node 
+-> scp kube-cluster-join 192.168.10.5:/home/uadmin
+    enter password for the worker1 node:
+    worker1 : run this file as sudo user in worker 1 node
+-> scp kube-cluster-join 192.168.10.6:/home/uadmin
+    enter password for the worker2 node:
+    worker2 : run this file as sudo user in worker 2 node
+# to check all the running nodes on the system we use
+-> kubectl get nodes
+# to get all the running pod namespaces
+-> kubectl get pods --all-namespaces
+-> kubectl get deployment
+# to get running services
+-> kubectl get svc/service
+-> kubectl create deployment
+-> kubectl create deployment web1 --image=httpd --port=80
+# to check deployment
+-> kubectl get deployment
+# to get pods running (-o wide will show additional columns)
+-> kubectl get pods -o wide
+# how to describe pod or deployment
+-> 
+# how to scale up a deployment
+-> kubectl scale deployment web1 --replicas=4
+# to check how many replicas are created
+-> kubectl get pods -o wide
+# sometimes it may take longer time, because, container starts downloading the image, which is a time taking process
+# how to scale down the deployment, scaling down will delete the containers
+-> kubectl scale deployment web1 --replicas=1
+# how to create a cluster ip service
+-> kubectl expose deployment web1
+# ip given by this service, can only be accessed by the machine present inside that machine
 
+# how to delete a service
+-> kubectl delete svc web1
 
+# how to create node port service
+-> kubectl expose deployment web1 --type=NodePort
+# how to create LoadBalancer service
+# in order to work this, we need a loadbalancer to work
+-> kubectl expose deployment web1 --type=LoadBalancer
+
+cluster IP -> node IP -> LoadBalancer IP 
