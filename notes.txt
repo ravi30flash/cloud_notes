@@ -579,3 +579,62 @@ to see the running nodes
 # master node role will be, control-plane
 # worker1 node role will be, ready
 # worker2 node role will be, ready
+
+
+----------------------------------
+4 may 2023
+----------------------------------
+
+Docker vs kubernetes
+-> docker is designed to be run on single machine, therefore we can't scaleup the application using docker commands
+-> also known as container orchestration
+
+why we need cluster of containers
+1. for load balancing
+2. to avoid single point failures
+
+replica sets: will create clone of pods
+
+deployment is just a management unit which wont be getting any ip address
+
+to access a app,we can't give pod ip, reason being there are many pods running at the same time, and we are not aware
+which pod is running what application, we also can't use deployment reason being, it doesn't have any ip address.
+
+so to overcome this issue, we use service.
+-> it is an entity that allows users to access an application running(deployment) in a kubernetes cluster
+-> deployment does not get an ip address, thus service is created which get's an ip address
+
+types of services
+1. cluster IP
+    -> this service gets cluster ip address
+    -> this can be access by other services within that cluster only
+
+2. node port 
+    -> this type of service is used for application which will be accessed by users
+    -> this application port is mapped on all node ip address within the cluster
+
+3. load balancer
+    -> this type of service is used mostly in cloud
+    -> the load balancer assigns an ip address to the service 
+    -> mostly services that will be accessed from internet use this type
+
+# commands to run after installing kubeadm
+
+# this command will advertise the ip address of the master node
+-> sudo kubeadm init --apiserver-advertise-address 192.168.10.1 --pod-network-cidr=10.244.0.0/16
+    # parameters
+    --apiserver-advertise-address : master ip address which is needed to be advertised
+    --pod-network-cidr : this parameter will give ip address to the pods, when they will be runned
+
+-> for cluster create vm in respective modes
+    -> first network adapter: NAT mode
+    -> second network adapter: Host mode
+
+# whenever cluster is created we need to create new directory in user's home directory, and we need to create new directory
+and create a new token everytime, whenever kubernetes server is need to be restarted
+
+-> mkdir .kube
+-> sudo cp /etc/kubernetes/admin.conf ./kube/config
+-> sudo chown uadmin:uadmin ./kube/config
+
+
