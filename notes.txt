@@ -635,18 +635,24 @@ and create a new token everytime, whenever kubernetes server is need to be resta
 
 # create the directory
 -> mkdir .kube
+
 # copy the token file to required directory
 -> sudo cp /etc/kubernetes/admin.conf ./kube/config
+
 # change the ownership of the token file
 -> sudo chown uadmin:uadmin ./kube/config
+
 # run this command to get th info on running nodes
 -> kubectl get nodes
+
 # get info about pods of the master
 -> kubectl get pods --all-namespaces
 -> kubectl apply -f https://url
 -> kubectl get pods --all-namespaces
+
 # to reset the cluster
 -> sudo kubeadm reset
+
 # remove the directory
 -> rm -rf .kube
 -> sudo kubeadm init --apiserver-advertise-address 192.168.10.1 --pod-network-cidr 10.244.0.0/16
@@ -656,7 +662,8 @@ and create a new token everytime, whenever kubernetes server is need to be resta
 -> sudo cp /etc/kubernetes/admin.conf .kube/config
 -> sudo chown uadmin:uadmin .kube/config
 -> kubectl get pods --all-namespaces
--> cat kube-cluster-join 
+-> cat kube-cluster-join
+
 # to run this file over ssh on the worker node 
 -> scp kube-cluster-join 192.168.10.5:/home/uadmin
     enter password for the worker1 node:
@@ -664,30 +671,46 @@ and create a new token everytime, whenever kubernetes server is need to be resta
 -> scp kube-cluster-join 192.168.10.6:/home/uadmin
     enter password for the worker2 node:
     worker2 : run this file as sudo user in worker 2 node
+
 # to check all the running nodes on the system we use
 -> kubectl get nodes
-# to get all the running pod namespaces
+
+# to get all the running pod namespaces(it is a logical grouping)
 -> kubectl get pods --all-namespaces
 -> kubectl get deployment
+
 # to get running services
 -> kubectl get svc/service
 -> kubectl create deployment
 -> kubectl create deployment web1 --image=httpd --port=80
+
 # to check deployment
 -> kubectl get deployment
+
 # to get pods running (-o wide will show additional columns)
 -> kubectl get pods -o wide
+
+# how to get information about a deployment
+-> kubectl describe deployment_name
+
 # how to describe pod or deployment
 -> 
 # how to scale up a deployment
 -> kubectl scale deployment web1 --replicas=4
-# to check how many replicas are created
+
+# to check how many replicas are created(gives information about all pods)
 -> kubectl get pods -o wide
+
+# to get information about 1 specific pod 
+-> kubectl describe pod
+
 # sometimes it may take longer time, because, container starts downloading the image, which is a time taking process
 # how to scale down the deployment, scaling down will delete the containers
 -> kubectl scale deployment web1 --replicas=1
+
 # how to create a cluster ip service
 -> kubectl expose deployment web1
+
 # ip given by this service, can only be accessed by the machine present inside that machine
 
 # how to delete a service
@@ -695,12 +718,14 @@ and create a new token everytime, whenever kubernetes server is need to be resta
 
 # how to create node port service
 -> kubectl expose deployment web1 --type=NodePort
+
 # how to create LoadBalancer service
 # in order to work this, we need a loadbalancer to work
 -> kubectl expose deployment web1 --type=LoadBalancer
 
 cluster IP -> node IP -> LoadBalancer IP 
 -> kubectl delete pod web1-id
+
 # how to get replica set
 -> kubectl get rs
 
@@ -714,3 +739,205 @@ replica and main deployment branch is deleted. then deployment service is update
 new image
 
 this also allows to roll back the changes, just in case if there is any error with new image file, and container are not bein created
+
+----------------------------------
+5 may 2023
+----------------------------------
+
+Pods : group of containers running on a machine is known as pod
+deployment : group of pods is known as deployment
+
+check for docker images
+-> sudo docker images
+
+create a directory
+-> mkdir web-app1
+-> cd web-app1
+
+check for nginx image
+-> go to hub.docker.com
+-> search for nginx image
+-> look for documentation how to use it
+
+location where nginx host the website
+-> /usr/share/nginx/html/
+
+create the web-app 
+-> sudo vi index.html -> write web contents to the app
+
+create the Dockerfile
+-> sudo vi Dockerfile
+
+content inside Dockerfile
+-> FROM nginx:latest
+-> COPY index.html /usr/share/nginx/html/
+
+create the image
+-> docker build -t web-app1:v1 ./
+
+running container form the image
+-> docker run --name web1 -p 8100:80 web-app1:v1
+
+# create repository on docker hub by the name of the web-app
+
+now rename the docker image, new name should be same as repository name
+-> sudo docker tag web-app1:v1 [new_name]
+
+login into docker hub account
+    enter username:
+    enter password:
+    
+push the image to the docker hub
+-> sudo docker push [new_img_name]
+
+# kubernetes part 
+
+create kubernetes deployment
+-> kubectl create deployment web-app1 --image=[image_name_from_cloud] --port=80 --replicas=2
+
+-> kubectl get pods
+-> kubectl get pods -o wide
+
+create a service
+-> kubectl expose deployment web-app1 --type=NodePort
+
+check the services running
+-> kubectl get services
+
+now if we update our app, we need to repeat the steps
+1. create docker img of the updated file
+2. push the updated img file to docker hub
+3. update the image in kubernetes
+
+to automate this process we use jenkins
+
+update the image in kubernetes we use
+-> kubectl set image deployment/web-app1 web-app1=[image_name_from_cloud]
+
+how to roll back a deployment
+-> kubectl rollout undo deployment/app --to-revision=2
+
+create new namespace (ns=namespace)
+-> kubectl create ns hpcsa
+
+assigning this name space to deployment
+-> kubectl create deployment hpcsa-app --image=httpd --port=80 --namespace=hpcsa --replicas=2
+
+how to check if deployment is create with our namespace
+-> kubectl get deployment --namespace=hpcsa
+or
+-> kubectl get pods --all-namespace
+
+# note : without --namespace argument, we get output of default namespace
+
+# now to create a service for the given deployment we have to give namespace parameter
+-> kubectl expose deployment hpcsa-app --type=NodePort --namespace=hpcsa
+
+# note: deleting the deployment wont delete the service automatically, we have to create it manually
+
+-> kubectl delete svc web-app1
+-> kubectl delete deployment hpcsa-app
+
+# how to create yaml file
+-> create mkdir /App1
+-> cd App1
+
+# create yaml file
+-> sudo vi web-app1.yaml
+
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+    name: web-app1-dep
+    spec:
+    selector:
+        matchLabels:
+        app: web-app1
+    replicas: 2 # tells deployment to run 2 pods matching the template
+    template:
+        metadata:
+        labels:
+            app: web-app1
+        spec:
+        containers:
+        - name: web-app1
+            image: [image_name]
+            ports:
+            - containerPort: 80
+
+Create a deployment using yaml file
+-> kubectl apply -f web-app1.yaml
+
+check deployments
+-> kubectl get deployment
+
+check replicas
+-> kubectl get rs
+-> kubectl get pods
+-> kubectl describe deployment web-app1
+
+# create service with cluster IP yaml file
+-> sudo vi web-app1-svc.yaml
+
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: web-app1-dep
+    spec:
+      selector:
+        app: web-App1
+
+      ports:
+        - name: http
+          protocol: TCP
+          port: 80
+          targetPort: 80
+
+# create service with NodePort IP yaml file
+-> sudo vi web-app1-svc.yaml
+
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: web-app1-dep
+    spec:
+      type: NodePort
+      selector:
+        app: web-App1
+
+      ports:
+        - nodePort: 31000 
+          port: 80
+          targetPort: 80
+
+# create service with NodePort IP yaml file
+-> sudo vi web-app1-svc.yaml
+
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: web-app1-dep
+    spec:
+      type: LoadBalancer
+      selector:
+        app: web-App1
+
+      ports:
+        - nodePort: 31000 
+          port: 80
+          targetPort: 80
+
+# how to create a deployment in dry run
+-> kubectl create deployment web-app2 --image=[image_name_from_cloud] --port=80 --replicas=2 --dry-run=client -o yaml > [file_name].yaml
+
+# kubectl cordon : is used to stop pod, and no more work will be scheduled upon them
+-> kubectl cordon worker2
+
+# making more deployment to see of work gets divided to worker2 or not
+-> kubectl create deployment h1 --image=[image_name_from_cloud] --port=80 -replicas=4 
+
+# after this pod with no workload can be removed safely
+-> kubectl delete pod #pod-id
+
+# how to remove temporary scheduleding or uncordon it, so that workload can be distributed to it
+-> kubectl get pods -o wide
