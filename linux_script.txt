@@ -1,0 +1,54 @@
+" " : space is a argument separator
+; : argument end line
+
+# command substitution
+` ` 
+$( ) 
+
+# how to perform mathematical operation
+let keyword:
+    how to use let:
+        let sum2=$a+$b
+        echo $sum2
+
+$(()):
+    sum=$(($a+$b))
+    echo $sum
+
+
+notes: 
+-> when we assign value to a variable in bash script, we do
+not use '$' symbol
+
+# how to use if-else block 
+    # if else block
+    age=23
+
+    if [[ $age>20 ]]
+    then
+        echo too old
+    else
+        echo too young
+    fi
+
+# how to use for loop 
+    # syntax format 1
+        string="hello this is cdac"
+        for x in $string
+        do
+            echo $x
+        done
+
+    # syntax format 2
+        for (( x=0; x<4; x++ ))
+        do
+            echo $x
+        done 
+    
+    # syntax format 3
+        for i in {start..end..step}
+        do 
+            #action
+        done
+
+
